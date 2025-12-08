@@ -1,78 +1,75 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function RegisterPage() {
-  const supabase = createClientComponentClient();
-  const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [msg, setMsg] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function registerUser(e: React.FormEvent<HTMLFormElement>) {
+  async function registerUser(e: any) {
     e.preventDefault();
     setLoading(true);
-    setMsg('');
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/callback`,
-      }
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/login`,
+      },
     });
 
+    setLoading(false);
+
     if (error) {
-      setMsg("Error: " + error.message);
-      setLoading(false);
+      alert("Error creando cuenta: " + error.message);
       return;
     }
 
-    setMsg("Registro realizado. Verifica tu correo.");
-    setLoading(false);
+    alert("Revisa tu correo para confirmar tu cuenta.");
   }
 
   return (
-    <div className="text-white max-w-md mx-auto mt-16">
-      <h1 className="text-3xl font-bold mb-6">Crear cuenta</h1>
+    <main className="min-h-screen bg-black text-white flex justify-center items-center px-4">
+      <form
+        onSubmit={registerUser}
+        className="bg-[#111827] p-10 rounded-xl border border-gray-800 w-full max-w-md"
+      >
+        <h1 className="text-3xl font-bold mb-6">Crear Cuenta</h1>
 
-      <form onSubmit={registerUser} className="space-y-4 bg-[#131A2A] p-6 rounded-lg border border-white/10">
         <input
           type="email"
-          placeholder="Correo electrónico"
+          placeholder="Email"
+          className="w-full p-3 mb-4 rounded bg-black border border-gray-700"
           value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full p-3 rounded bg-black border border-white/10"
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
 
         <input
           type="password"
           placeholder="Contraseña"
+          className="w-full p-3 mb-6 rounded bg-black border border-gray-700"
           value={password}
-          onChange={e => setPassword(e.target.value)}
-          className="w-full p-3 rounded bg-black border border-white/10"
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold"
+          className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
         >
-          {loading ? "Creando..." : "Crear cuenta"}
+          {loading ? "Creando cuenta..." : "Registrarse"}
         </button>
-
-        {msg && <p className="text-green-400 text-sm">{msg}</p>}
       </form>
-
-      <p className="text-center opacity-70 mt-4">
-        ¿Ya tienes cuenta? <a className="text-purple-400" href="/login">Entrar</a>
-      </p>
-    </div>
+    </main>
   );
 }
+

@@ -1,37 +1,72 @@
 'use client';
 
-export default function PricingTable() {
-  const plans = [
-    {
-      title: "Acceso 24 horas",
-      price: "20€",
-      description: "Acceso completo durante 24h. Perfecto para proyectos rápidos.",
-      priceId: process.env.NEXT_PUBLIC_DAILY_PRICE_ID
-    },
-    {
-      title: "Suscripción 6 meses",
-      price: "50€/mes",
-      description: "Ideal para diseñadores o empresas con necesidades continuas.",
-      priceId: process.env.NEXT_PUBLIC_SIX_MONTHS_PRICE_ID
+export default function PricingPlans() {
+  async function startCheckout(plan: "daily" | "monthly" | "six") {
+    const endpoint =
+      plan === "daily"
+        ? "/api/checkout/daily"
+        : plan === "monthly"
+        ? "/api/checkout/monthly"
+        : "/api/checkout/six-months";
+
+    const res = await fetch(endpoint, { method: "POST" });
+
+    const data = await res.json();
+
+    if (data?.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Error iniciando pago: " + (data.error || "Desconocido"));
     }
-  ];
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-      {plans.map((plan, i) => (
-        <div key={i} className="p-8 rounded-xl bg-[#131A2A] border border-white/10 text-center">
-          <h3 className="text-2xl font-bold mb-4">{plan.title}</h3>
-          <p className="text-5xl font-extrabold mb-4">{plan.price}</p>
-          <p className="opacity-70 mb-6">{plan.description}</p>
+    <div className="text-white max-w-4xl mx-auto mt-20">
+      <h1 className="text-4xl font-bold text-center mb-10">Planes de Suscripción</h1>
 
-          <a
-            href={`/api/create-checkout-session?priceId=${plan.priceId}`}
-            className="px-6 py-3 bg-primary rounded-lg font-semibold text-lg hover:opacity-90 inline-block"
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        {/* DAILY PLAN */}
+        <div className="card p-6 bg-[#151a28] rounded-lg border border-white/10">
+          <h2 className="text-2xl font-bold mb-4">Plan Diario</h2>
+          <p className="text-xl mb-4">20€ / día</p>
+          <p className="opacity-70 mb-4">Ideal para uso puntual</p>
+          <button
+            onClick={() => startCheckout("daily")}
+            className="w-full bg-primary py-3 rounded-lg font-semibold"
           >
-            Elegir plan
-          </a>
+            Comprar 1 Día
+          </button>
         </div>
-      ))}
+
+        {/* MONTHLY PLAN */}
+        <div className="card p-6 bg-[#151a28] rounded-lg border border-white/10">
+          <h2 className="text-2xl font-bold mb-4">Plan Mensual</h2>
+          <p className="text-xl mb-4">40€ / mes</p>
+          <p className="opacity-70 mb-4">Acceso continuo a creación de logos</p>
+          <button
+            onClick={() => startCheckout("monthly")}
+            className="w-full bg-primary py-3 rounded-lg font-semibold"
+          >
+            Comprar Mensual
+          </button>
+        </div>
+
+        {/* 6 MONTHS PLAN */}
+        <div className="card p-6 bg-[#151a28] rounded-lg border border-white/10">
+          <h2 className="text-2xl font-bold mb-4">Plan 6 Meses</h2>
+          <p className="text-xl mb-4">50€ / mes (300€ total)</p>
+          <p className="opacity-70 mb-4">Ahorra dinero con suscripción semestral</p>
+          <button
+            onClick={() => startCheckout("six")}
+            className="w-full bg-primary py-3 rounded-lg font-semibold"
+          >
+            Comprar 6 Meses
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 }
+

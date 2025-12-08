@@ -1,72 +1,112 @@
-'use client';
+"use client";
 
-export default function PricingPlans() {
-  async function startCheckout(plan: "daily" | "monthly" | "six") {
-    const endpoint =
-      plan === "daily"
-        ? "/api/checkout/daily"
-        : plan === "monthly"
-        ? "/api/checkout/monthly"
-        : "/api/checkout/six-months";
+import { useState } from "react";
+import Link from "next/link";
 
-    const res = await fetch(endpoint, { method: "POST" });
+export default function Landing() {
+  const [loadingPlan, setLoadingPlan] = useState("");
 
-    const data = await res.json();
+  async function checkout(plan: string) {
+    try {
+      setLoadingPlan(plan);
 
-    if (data?.url) {
-      window.location.href = data.url;
-    } else {
-      alert("Error iniciando pago: " + (data.error || "Desconocido"));
+      const endpoint =
+        plan === "daily"
+          ? "/api/checkout/daily"
+          : plan === "monthly"
+          ? "/api/checkout/monthly"
+          : "/api/checkout/six-months";
+
+      const res = await fetch(endpoint, { method: "POST" });
+      const data = await res.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Error iniciando el pago: " + data.error);
+      }
+    } catch (error) {
+      alert("Error desconocido iniciando pago.");
+    } finally {
+      setLoadingPlan("");
     }
   }
 
   return (
-    <div className="text-white max-w-4xl mx-auto mt-20">
-      <h1 className="text-4xl font-bold text-center mb-10">Planes de Suscripción</h1>
+    <main className="min-h-screen bg-black text-white px-6 py-20">
+      <div className="max-w-5xl mx-auto text-center">
+        {/* HEADER */}
+        <h1 className="text-5xl font-bold mb-4">Crea logos con IA</h1>
+        <p className="text-lg text-gray-300 mb-8">
+          Regístrate, selecciona un plan y genera logos ilimitados con inteligencia artificial.
+        </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-        {/* DAILY PLAN */}
-        <div className="card p-6 bg-[#151a28] rounded-lg border border-white/10">
-          <h2 className="text-2xl font-bold mb-4">Plan Diario</h2>
-          <p className="text-xl mb-4">20€ / día</p>
-          <p className="opacity-70 mb-4">Ideal para uso puntual</p>
-          <button
-            onClick={() => startCheckout("daily")}
-            className="w-full bg-primary py-3 rounded-lg font-semibold"
+        {/* LOGIN / REGISTER BUTTONS */}
+        <div className="flex justify-center gap-5 mb-14">
+          <Link
+            href="/login"
+            className="px-6 py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
           >
-            Comprar 1 Día
-          </button>
+            Iniciar sesión
+          </Link>
+
+          <Link
+            href="/register"
+            className="px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg font-semibold hover:bg-gray-700"
+          >
+            Crear cuenta
+          </Link>
         </div>
 
-        {/* MONTHLY PLAN */}
-        <div className="card p-6 bg-[#151a28] rounded-lg border border-white/10">
-          <h2 className="text-2xl font-bold mb-4">Plan Mensual</h2>
-          <p className="text-xl mb-4">40€ / mes</p>
-          <p className="opacity-70 mb-4">Acceso continuo a creación de logos</p>
-          <button
-            onClick={() => startCheckout("monthly")}
-            className="w-full bg-primary py-3 rounded-lg font-semibold"
-          >
-            Comprar Mensual
-          </button>
-        </div>
+        {/* PRICING SECTION */}
+        <h2 className="text-4xl font-bold mb-10">Planes disponibles</h2>
 
-        {/* 6 MONTHS PLAN */}
-        <div className="card p-6 bg-[#151a28] rounded-lg border border-white/10">
-          <h2 className="text-2xl font-bold mb-4">Plan 6 Meses</h2>
-          <p className="text-xl mb-4">50€ / mes (300€ total)</p>
-          <p className="opacity-70 mb-4">Ahorra dinero con suscripción semestral</p>
-          <button
-            onClick={() => startCheckout("six")}
-            className="w-full bg-primary py-3 rounded-lg font-semibold"
-          >
-            Comprar 6 Meses
-          </button>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
+          {/* DAILY PLAN */}
+          <div className="p-8 bg-[#111827] rounded-xl border border-gray-800">
+            <h3 className="text-2xl font-bold mb-4">Plan Diario</h3>
+            <p className="text-gray-300 mb-6">Acceso por 24 horas</p>
+            <p className="text-4xl font-bold mb-6">20€</p>
+
+            <button
+              onClick={() => checkout("daily")}
+              className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
+            >
+              {loadingPlan === "daily" ? "Procesando..." : "Comprar"}
+            </button>
+          </div>
+
+          {/* MONTHLY PLAN */}
+          <div className="p-8 bg-[#111827] rounded-xl border border-gray-800">
+            <h3 className="text-2xl font-bold mb-4">Plan Mensual</h3>
+            <p className="text-gray-300 mb-6">Acceso por 30 días</p>
+            <p className="text-4xl font-bold mb-6">40€</p>
+
+            <button
+              onClick={() => checkout("monthly")}
+              className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
+            >
+              {loadingPlan === "monthly" ? "Procesando..." : "Comprar"}
+            </button>
+          </div>
+
+          {/* SIX MONTHS PLAN */}
+          <div className="p-8 bg-[#111827] rounded-xl border border-gray-800">
+            <h3 className="text-2xl font-bold mb-4">Plan Semestral</h3>
+            <p className="text-gray-300 mb-6">Acceso durante 6 meses</p>
+            <p className="text-4xl font-bold mb-6">50€ / mes</p>
+
+            <button
+              onClick={() => checkout("six-months")}
+              className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
+            >
+              {loadingPlan === "six-months" ? "Procesando..." : "Comprar"}
+            </button>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
-
