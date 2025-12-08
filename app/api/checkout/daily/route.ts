@@ -8,9 +8,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2023-10
 export async function POST() {
   try {
     const siteUrl = process.env.NEXT_PUBLIC_URL;
+    const priceId = process.env.DAILY_PRICE_ID;
 
     if (!siteUrl) {
       throw new Error("NEXT_PUBLIC_URL is missing in environment variables.");
+    }
+
+    if (!priceId) {
+      throw new Error("DAILY_PRICE_ID is missing in environment variables.");
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -18,7 +23,7 @@ export async function POST() {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: process.env.MONTHLY_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -32,4 +37,3 @@ export async function POST() {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-
