@@ -42,7 +42,7 @@ export default function PricingPlans() {
         {/* MONTHLY PLAN */}
         <div className="card p-6 bg-[#151a28] rounded-lg border border-white/10">
           <h2 className="text-2xl font-bold mb-4">Plan Mensual</h2>
-          <p className="text-xl mb-4">50€ / mes</p>
+          <p className="text-xl mb-4">40€ / mes</p>
           <p className="opacity-70 mb-4">Acceso continuo a creación de logos</p>
           <button
             onClick={() => startCheckout("monthly")}
