@@ -1,27 +1,41 @@
-import Link from 'next/link';
+'use client';
+
+import Link from "next/link";
 
 export default function PricingTable() {
   const plans = [
-    { name: "Básico", price: "10€", credits: 10, stripeId: process.env.NEXT_PUBLIC_PRICE_BASIC },
-    { name: "Pro", price: "5€", credits: 5, stripeId: process.env.NEXT_PUBLIC_PRICE_PRO },
-    { name: "Ultra", price: "2€", credits: 2, stripeId: process.env.NEXT_PUBLIC_PRICE_ULTRA },
+    {
+      title: "Acceso 24h",
+      price: "20€",
+      description: "Acceso completo por 24 horas. Genera todos los logos que quieras.",
+      priceId: process.env.NEXT_PUBLIC_DAILY_PRICE_ID
+    },
+    {
+      title: "Suscripción 6 meses",
+      price: "50€/mes",
+      description: "Acceso ilimitado durante 6 meses. Ideal para empresas o diseñadores.",
+      priceId: process.env.NEXT_PUBLIC_SIX_MONTHS_PRICE_ID
+    }
   ];
 
   return (
-    <div className="grid md:grid-cols-3 gap-6 mt-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
       {plans.map((plan, i) => (
-        <div key={i} className="card text-center">
-          <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-          <p className="text-4xl font-bold text-primary mb-2">{plan.price}</p>
-          <p className="opacity-70 mb-4">{plan.credits} créditos</p>
+        <div key={i} className="card p-8 text-center border border-white/10 rounded-lg bg-[#131A2A]">
+          
+          <h3 className="text-2xl font-bold mb-4">{plan.title}</h3>
+          <p className="text-4xl font-extrabold mb-4">{plan.price}</p>
+          <p className="opacity-70 mb-8">{plan.description}</p>
+
           <Link
-            href={"/checkout?price=" + plan.stripeId}
-            className="btn-primary block text-center"
+            href={`/api/create-checkout-session?priceId=${plan.priceId}`}
+            className="px-6 py-3 bg-primary rounded-lg text-lg font-semibold hover:opacity-90"
           >
-            Comprar
+            Suscribirse
           </Link>
         </div>
       ))}
     </div>
   );
 }
+
