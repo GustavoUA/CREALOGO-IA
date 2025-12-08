@@ -9,7 +9,7 @@ export default function GeneratorPage() {
 
   async function generate() {
     setLoading(true);
-    const res = await fetch('app/api/generate-logo', {
+    const res = await fetch('/api/generate-logo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt })
