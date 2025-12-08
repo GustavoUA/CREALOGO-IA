@@ -1,0 +1,50 @@
+/* CrealogoAI - Tema DARK Premium */
+
+:root {
+  --primary: #6E56CF;
+  --bg: #0B0F19;
+  --card: #131A2A;
+  --text: #ffffff;
+}
+
+/* Fondo global */
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Tarjetas */
+.card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* Botones */
+.btn-primary {
+  background: var(--primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: opacity .2s;
+}
+
+.btn-primary:hover {
+  opacity: .8;
+}
+
+/* Títulos */
+h1, h2, h3 {
+  font-weight: 600;
+}
+
+/* Animación suave */
+.fade-in {
+  animation: fade-in 0.4s ease both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
