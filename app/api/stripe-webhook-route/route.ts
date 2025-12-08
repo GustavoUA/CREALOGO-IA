@@ -3,11 +3,7 @@ import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  return NextResponse.json({ message: "Stripe webhook active" });
-}
-
-export async function POST(req) {
+export async function POST(req: Request) {
   try {
     const body = await req.text();
 
@@ -20,12 +16,10 @@ export async function POST(req) {
 
     const event = stripe.webhooks.constructEvent(body, signature, secret);
 
-    console.log("🔔 Webhook recibido:", event.type);
-
     return NextResponse.json({ received: true });
-  } catch (err) {
-    console.error("❌ Error verificando el webhook:", err.message);
+  } catch (err: any) {
     return new NextResponse("Webhook Error", { status: 400 });
   }
 }
+
 
