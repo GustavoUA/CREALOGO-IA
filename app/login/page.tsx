@@ -29,10 +29,18 @@ export default function LoginPage() {
 
     if (error) {
       alert("Error iniciando sesión: " + error.message);
+      console.log(error);
       return;
     }
 
-    router.push("/dashboard");
+    // usuario debe tener email confirmado
+    if (!data.user.email_confirmed_at) {
+      alert("Debes confirmar tu correo antes de iniciar sesión.");
+      return;
+    }
+
+    // Si entra, enviarlo a selección de plan
+    router.push("/pricing");
   }
 
   return (
@@ -45,28 +53,26 @@ export default function LoginPage() {
 
         <input
           type="email"
-          placeholder="Email"
           className="w-full p-3 mb-4 rounded bg-black border border-gray-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
-          placeholder="Contraseña"
           className="w-full p-3 mb-6 rounded bg-black border border-gray-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Contraseña"
           required
+          onChange={(e) => setPassword(e.target.value)}
         />
 
         <button
           type="submit"
-          disabled={loading}
           className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
+          disabled={loading}
         >
-          {loading ? "Entrando..." : "Entrar"}
+          {loading ? "Entrando…" : "Entrar"}
         </button>
       </form>
     </main>

@@ -17,11 +17,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/login`,
+        emailRedirectTo: `${window.location.origin}/login`,
       },
     });
 
@@ -29,10 +29,11 @@ export default function RegisterPage() {
 
     if (error) {
       alert("Error creando cuenta: " + error.message);
+      console.log(error);
       return;
     }
 
-    alert("Revisa tu correo para confirmar tu cuenta.");
+    alert("Cuenta creada. Revisa tu correo para confirmar el registro.");
   }
 
   return (
@@ -45,28 +46,26 @@ export default function RegisterPage() {
 
         <input
           type="email"
-          placeholder="Email"
           className="w-full p-3 mb-4 rounded bg-black border border-gray-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
-          placeholder="Contraseña"
           className="w-full p-3 mb-6 rounded bg-black border border-gray-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Contraseña"
           required
+          onChange={(e) => setPassword(e.target.value)}
         />
 
         <button
           type="submit"
-          disabled={loading}
           className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
+          disabled={loading}
         >
-          {loading ? "Creando cuenta..." : "Registrarse"}
+          {loading ? "Creando…" : "Registrarse"}
         </button>
       </form>
     </main>
