@@ -1,24 +1,21 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge"; // opcional pero recomendado en Vercel
+export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
 
     if (!prompt) {
-      return NextResponse.json(
-        { error: "Prompt requerido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Prompt requerido" }, { status: 400 });
     }
 
-    const replicateRes = await fetch(
+    const predictionReq = await fetch(
       "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
       {
         method: "POST",
         headers: {
-          "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}`,
+          Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -26,54 +23,51 @@ export async function POST(req: Request) {
             prompt,
             num_outputs: 1,
             aspect_ratio: "1:1",
-          }
+          },
         }),
       }
     );
 
-    const prediction = await replicateRes.json();
+    const prediction = await predictionReq.json();
 
     if (prediction.error) {
-      return NextResponse.json(
-        { error: prediction.error },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: prediction.error }, { status: 500 });
     }
 
-    // Esperar a que finalice la generación
+    // Polling
+    let status = prediction.status;
     let result = prediction;
-    while (result.status !== "succeeded" && result.status !== "failed") {
-      await new Promise((r) => setTimeout(r, 1500));
 
-      const check = await fetch(
+    while (status !== "succeeded" && status !== "failed") {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const poll = await fetch(
         `https://api.replicate.com/v1/predictions/${prediction.id}`,
         {
           headers: {
-            "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}`,
+            Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
           },
         }
       );
 
-      result = await check.json();
+      result = await poll.json();
+      status = result.status;
     }
 
-    if (result.status === "failed") {
+    if (status === "failed") {
       return NextResponse.json(
-        { error: "Replicate no pudo generar la imagen" },
+        { error: "Replicate falló al generar la imagen" },
         { status: 500 }
       );
     }
 
-    // La imagen final viene como URL directa
-    const imageUrl = result.output?.[0];
-
     return NextResponse.json({
       success: true,
-      image: imageUrl,
+      image: result.output[0],
     });
   } catch (err: any) {
     return NextResponse.json(
-      { error: err.message || "Error inesperado" },
+      { error: err.message ?? "Error desconocido" },
       { status: 500 }
     );
   }
