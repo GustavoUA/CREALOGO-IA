@@ -1,15 +1,23 @@
-// Middleware simple para proteger rutas usando Supabase Auth
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 
-export async function requireAuth() {
-  const supabase = createServerComponentClient({ cookies });
+export async function requireAuth(req: Request) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const token = req.headers.get("Authorization")?.replace("Bearer ", "");
 
-  if (!user) {
-    return { redirect: "/login", user: null };
+  if (!token) {
+    return { user: null, error: "No token provided" };
   }
 
-  return { user };
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data?.user) {
+    return { user: null, error: "Unauthorized" };
+  }
+
+  return { user: data.user, error: null };
 }
+
