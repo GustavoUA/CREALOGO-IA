@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 export default function GeneratorPage() {
   const [prompt, setPrompt] = useState('');
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function generate() {
