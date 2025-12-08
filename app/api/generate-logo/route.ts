@@ -1,48 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+});
 
-export async function GET() {
-  return NextResponse.json(
-    { error: "Método no permitido, usa POST" },
-    { status: 405 }
-  );
-}
-
-export async function POST(req) {
+export async function POST(req: NextRequest) {
   try {
     const { prompt } = await req.json();
 
-    if (!prompt) {
+    const result = await openai.images.generate({
+      prompt,
+      model: "gpt-image-1",
+      size: "1024x1024",
+      response_format: "b64_json",
+    });
+
+    const image = result.data?.[0]?.b64_json;
+
+    if (!image) {
       return NextResponse.json(
-        { success: false, error: "El prompt es obligatorio" },
-        { status: 400 }
+        { error: "OpenAI did not return an image" },
+        { status: 500 }
       );
     }
 
-    const client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
-
-    const result = await client.images.generate({
-      model: "gpt-image-1",
-      prompt,
-      size: "1024x1024",
-      response_format: "b64_json"
-    });
-
     return NextResponse.json({
       success: true,
-      image: result.data[0].b64_json
+      image,
     });
-
-  } catch (error) {
-    console.error("❌ Error generando imagen:", error);
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: "Error en el servidor" },
+      { error: error.message ?? "Unknown error" },
       { status: 500 }
     );
   }
 }
+
