@@ -1,71 +1,94 @@
 'use client';
 
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
 
-export default function Pricing() {
-  const router = useRouter();
+export default function PricingPage() {
+  const [loading, setLoading] = useState<string | null>(null);
 
-  async function subscribe(priceId: string) {
-    const userId = "USER-ID-REAL-DE-SUPABASE";
+  async function subscribe(plan: string) {
+    setLoading(plan);
 
-    const res = await fetch("/api/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ priceId, userId }),
-    });
+    const endpoint =
+      plan === 'daily'
+        ? '/api/checkout/daily'
+        : plan === 'monthly'
+        ? '/api/checkout/monthly'
+        : '/api/checkout/six-months';
 
-    const data = await res.json();
-    window.location.href = data.url;
+    try {
+      const res = await fetch(endpoint, { method: 'POST' });
+      const data = await res.json();
+
+      if (data.url) {
+        window.location.href = data.url; // redirige al checkout de Stripe
+      } else {
+        alert('Error iniciando el pago: ' + data.error);
+      }
+    } catch (err: any) {
+      alert('Error iniciando el pago.');
+    }
+
+    setLoading(null);
   }
 
   return (
-    <div className="text-white max-w-xl mx-auto mt-12">
-      <h1 className="text-3xl font-bold mb-6">Planes Premium</h1>
+    <div className="text-white max-w-5xl mx-auto py-16">
+      <h1 className="text-4xl font-bold text-center mb-10">Planes y Precios</h1>
 
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid md:grid-cols-3 gap-8">
+        {/* PLAN DIARIO */}
+        <div className="card p-6 text-center border border-white/10 rounded-lg bg-[#131A2A]">
+          <h2 className="text-2xl font-bold mb-2">Plan Diario</h2>
+          <p className="text-4xl font-bold text-primary mb-4">20 €</p>
+          <p className="opacity-70 mb-6">Acceso por 24 horas con créditos ilimitados.</p>
+          <button
+            onClick={() => subscribe('daily')}
+            className="w-full py-3 bg-primary rounded-lg font-semibold"
+            disabled={loading === 'daily'}
+          >
+            {loading === 'daily' ? 'Procesando…' : 'Comprar 1 día'}
+          </button>
+        </div>
 
-          {/* DAILY PLAN */}
-          <div className="p-8 bg-[#111827] rounded-xl border border-gray-800">
-            <h3 className="text-2xl font-bold mb-4">Plan Diario</h3>
-            <p className="text-gray-300 mb-6">Acceso por 24 horas</p>
-            <p className="text-4xl font-bold mb-6">20€</p>
+        {/* PLAN MENSUAL */}
+        <div className="card p-6 text-center border border-white/10 rounded-lg bg-[#131A2A]">
+          <h2 className="text-2xl font-bold mb-2">Plan Mensual</h2>
+          <p className="text-4xl font-bold text-primary mb-4">40 €</p>
+          <p className="opacity-70 mb-6">Acceso completo por 30 días + prioridad.</p>
+          <button
+            onClick={() => subscribe('monthly')}
+            className="w-full py-3 bg-primary rounded-lg font-semibold"
+            disabled={loading === 'monthly'}
+          >
+            {loading === 'monthly' ? 'Procesando…' : 'Comprar 1 mes'}
+          </button>
+        </div>
 
-            <button
-              onClick={() => checkout("daily")}
-              className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
-            >
-              {loadingPlan === "daily" ? "Procesando..." : "Comprar"}
-            </button>
-          </div>
+        {/* PLAN 6 MESES */}
+        <div className="card p-6 text-center border border-white/10 rounded-lg bg-[#131A2A]">
+          <h2 className="text-2xl font-bold mb-2">Plan 6 meses</h2>
+          <p className="text-4xl font-bold text-primary mb-4">50 €/mes</p>
+          <p className="opacity-70 mb-6">Plan extendido con ahorro del 20%.</p>
+          <button
+            onClick={() => subscribe('six-months')}
+            className="w-full py-3 bg-primary rounded-lg font-semibold"
+            disabled={loading === 'six-months'}
+          >
+            {loading === 'six-months' ? 'Procesando…' : 'Comprar 6 meses'}
+          </button>
+        </div>
+      </div>
 
-          {/* MONTHLY PLAN */}
-          <div className="p-8 bg-[#111827] rounded-xl border border-gray-800">
-            <h3 className="text-2xl font-bold mb-4">Plan Mensual</h3>
-            <p className="text-gray-300 mb-6">Acceso por 30 días</p>
-            <p className="text-4xl font-bold mb-6">40€</p>
-
-            <button
-              onClick={() => checkout("monthly")}
-              className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
-            >
-              {loadingPlan === "monthly" ? "Procesando..." : "Comprar"}
-            </button>
-          </div>
-
-          {/* SIX MONTHS PLAN */}
-          <div className="p-8 bg-[#111827] rounded-xl border border-gray-800">
-            <h3 className="text-2xl font-bold mb-4">Plan Semestral</h3>
-            <p className="text-gray-300 mb-6">Acceso durante 6 meses</p>
-            <p className="text-4xl font-bold mb-6">50€ / mes</p>
-
-            <button
-              onClick={() => checkout("six-months")}
-              className="w-full py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700"
-            >
-              {loadingPlan === "six-months" ? "Procesando..." : "Comprar"}
-            </button>
-          </div>
-
+      {/* Botón volver al Home */}
+      <div className="text-center mt-12">
+        <a
+          href="/"
+          className="px-6 py-3 border border-white/20 rounded-lg text-white hover:bg-white/10 transition"
+        >
+          Volver al Home
+        </a>
+      </div>
     </div>
   );
 }
+
