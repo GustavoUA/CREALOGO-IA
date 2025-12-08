@@ -34,7 +34,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: prediction.error }, { status: 500 });
     }
 
-    // Polling
     let status = prediction.status;
     let result = prediction;
 
@@ -72,3 +71,4 @@ export async function POST(req: Request) {
     );
   }
 }
+
