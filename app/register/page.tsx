@@ -10,7 +10,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
 
-  async function registerUser(e) {
+  async function loginUser(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     setLoading(true);
     setMsg('');
