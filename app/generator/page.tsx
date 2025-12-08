@@ -16,7 +16,7 @@ export default function GeneratorPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setImage(`data:image/png;base64,${data.image}`);
+      setImage(data.image);
     } else {
       alert(data.error || 'Error generating logo');
     }
