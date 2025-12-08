@@ -10,13 +10,21 @@ export async function POST() {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      line_items: [{ price: process.env.MONTH_PRICE_ID, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?sub=active`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?sub=cancel`,
+      line_items: [
+        {
+          price: process.env.MONTH_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+
+      success_url: `${process.env.NEXT_PUBLIC_URL}/generator`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/pricing?cancel=true`,
     });
 
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
+    console.error("Stripe monthly error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
