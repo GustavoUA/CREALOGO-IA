@@ -1,5 +1,5 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
@@ -8,87 +8,45 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
 });
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_SECRET_KEY!
-);
-
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
-
-  let event;
+  const signature = req.headers.get("stripe-signature");
 
   try {
-    event = stripe.webhooks.constructEvent(
+    const event = stripe.webhooks.constructEvent(
       body,
-      sig,
+      signature!,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-  } catch (err: any) {
-    console.error("Webhook signature error:", err);
-    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
-  }
 
-  // ----------------------------
-  //  EVENTOS QUE MANEJAMOS
-  // ----------------------------
-  switch (event.type) {
-    case "checkout.session.completed": {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_SECRET_KEY!
+    );
+
+    if (event.type === "checkout.session.completed") {
       const session = event.data.object as any;
 
-      const userEmail = session.customer_details.email;
-      const priceId = session.line_items?.[0]?.price?.id;
+      const email = session.customer_details.email;
 
-      // Obtener el usuario de Supabase por email
-      const { data: user } = await supabase
-        .from("users")
-        .select("id")
-        .eq("email", userEmail)
-        .single();
+      // Obtener créditos dependiendo del plan
+      let credits = 0;
 
-      if (!user) {
-        console.warn("Usuario no encontrado:", userEmail);
-        break;
-      }
+      if (session.amount_total === 2000) credits = 100;       // Daily
+      if (session.amount_total === 5000) credits = 500;       // Monthly
+      if (session.amount_total === 30000) credits = 4000;     // 6 months
 
-      // Créditos según producto comprado
-      let creditsToAdd = 0;
+      // Actualizamos en Supabase
+      await supabase
+        .from("profiles")
+        .update({ credits: supabase.rpc("increment_credits", { amount: credits }) })
+        .eq("email", email);
 
-      if (priceId === process.env.DAILY_PRICE_ID) creditsToAdd = 50;
-      if (priceId === process.env.MONTHLY_PRICE_ID) creditsToAdd = 300;
-      if (priceId === process.env.SIX_MONTHS_PRICE_ID) creditsToAdd = 2000;
-
-      await supabase.rpc("add_credits", {
-        user_id: user.id,
-        credits: creditsToAdd,
-      });
-
-      break;
+      console.log("Créditos añadidos a:", email);
     }
 
-    case "invoice.paid": {
-      // Renovación automática de suscripción
-      const invoice = event.data.object as any;
-      const customer = await stripe.customers.retrieve(invoice.customer);
-      const userEmail = (customer as any).email;
-
-      const { data: user } = await supabase
-        .from("users")
-        .select("id")
-        .eq("email", userEmail)
-        .single();
-
-      if (user) {
-        await supabase.rpc("add_credits", {
-          user_id: user.id,
-          credits: 300, // créditos mensuales
-        });
-      }
-
-      break;
-    }
+    return NextResponse.json({ received: true });
+  } catch (err: any) {
+    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
-
-  return NextResponse.json({ received: true });
 }
