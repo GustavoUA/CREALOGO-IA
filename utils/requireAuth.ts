@@ -1,5 +1,5 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { redirect } from "next/navigation";
 
 export default async function requireAuth() {
@@ -15,4 +15,5 @@ export default async function requireAuth() {
 
   return session;
 }
+
 
