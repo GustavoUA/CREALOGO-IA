@@ -10,8 +10,8 @@ export default function RegisterPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function registerUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,30 +21,32 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/callback`,
+      }
     });
 
     if (error) {
-      setMsg('Error: ' + error.message);
-    } else {
-      setMsg('Cuenta creada. Revisa tu correo para confirmar.');
-      // Puedes redirigir si quieres:
-      // router.push('/login');
+      setMsg("Error: " + error.message);
+      setLoading(false);
+      return;
     }
 
+    setMsg("Registro realizado. Verifica tu correo.");
     setLoading(false);
   }
 
   return (
-    <div className="text-white max-w-md mx-auto mt-10">
+    <div className="text-white max-w-md mx-auto mt-16">
       <h1 className="text-3xl font-bold mb-6">Crear cuenta</h1>
 
-      <form onSubmit={registerUser} className="space-y-4 card">
+      <form onSubmit={registerUser} className="space-y-4 bg-[#131A2A] p-6 rounded-lg border border-white/10">
         <input
           type="email"
           placeholder="Correo electrónico"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 rounded bg-[#131A2A] border border-white/10"
+          onChange={e => setEmail(e.target.value)}
+          className="w-full p-3 rounded bg-black border border-white/10"
           required
         />
 
@@ -52,21 +54,25 @@ export default function RegisterPage() {
           type="password"
           placeholder="Contraseña"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 rounded bg-[#131A2A] border border-white/10"
+          onChange={e => setPassword(e.target.value)}
+          className="w-full p-3 rounded bg-black border border-white/10"
           required
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-primary rounded-lg font-semibold"
+          className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold"
         >
-          {loading ? 'Registrando…' : 'Registrarse'}
+          {loading ? "Creando..." : "Crear cuenta"}
         </button>
 
-        {msg && <p className="text-sm opacity-80 mt-2">{msg}</p>}
+        {msg && <p className="text-green-400 text-sm">{msg}</p>}
       </form>
+
+      <p className="text-center opacity-70 mt-4">
+        ¿Ya tienes cuenta? <a className="text-purple-400" href="/login">Entrar</a>
+      </p>
     </div>
   );
 }
