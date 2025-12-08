@@ -2,28 +2,33 @@
 
 import { useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
   const supabase = createClientComponentClient();
+  const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
 
-  async function loginUser(e: React.MouseEvent<HTMLButtonElement>) {
+  async function registerUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setMsg('');
 
     const { error } = await supabase.auth.signUp({
       email,
-      password
+      password,
     });
 
     if (error) {
       setMsg('Error: ' + error.message);
     } else {
-      setMsg('Registro exitoso. Revisa tu correo para confirmar tu cuenta.');
+      setMsg('Cuenta creada. Revisa tu correo para confirmar.');
+      // Puedes redirigir si quieres:
+      // router.push('/login');
     }
 
     setLoading(false);
@@ -57,7 +62,7 @@ export default function RegisterPage() {
           disabled={loading}
           className="w-full py-3 bg-primary rounded-lg font-semibold"
         >
-          {loading ? 'Registrando...' : 'Registrarse'}
+          {loading ? 'Registrando…' : 'Registrarse'}
         </button>
 
         {msg && <p className="text-sm opacity-80 mt-2">{msg}</p>}
